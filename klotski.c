@@ -10,9 +10,17 @@ typedef struct board{
 } board;
 
 void printBoard(int pstate[][5]);
-void initializeStructBoard(board *pb, int NumOfMoves, int state[][5], board *Parent, board *FirstChild, board *NextBrother);
+void initializeStructBoard(
+	board *pb,
+	int NumOfMoves,
+	int state[][5],
+	board *Parent,
+	board *FirstChild,
+	board *NextBrother
+);
 
 int main(void){
+	int NumOfMoves;
 	int InitialState[4][5] = {
 		{1, 1, 2, 3, 4},
 		{5, 5, 6, 3, 0},
@@ -37,7 +45,14 @@ void printBoard(int pstate[][5]){
 	printf("--------------------\n");
 }
 
-void initializeStructBoard(board *pb, int NumOfMoves, int state[][5], board *Parent, board *FirstChild, board *NextBrother){
+void initializeStructBoard(
+	board *pb,
+	int NumOfMoves,
+	int state[][5],
+	board *Parent,
+	board *FirstChild,
+	board *NextBrother
+){
 	int xi,yi;
 	for(yi = 0; yi < 5; yi++){
 		for(xi = 0; xi < 4; xi++){
