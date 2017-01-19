@@ -32,11 +32,11 @@ int main(void){
 	int piece, direction; /* ループカウンタ */
 	int InitialState[4][5] = {
 		{5, 5, 2, 3, 4},
-		{1, 1, 6, 3, 0},
-		{1, 1, 6, 7, 0},
+		{1, 1, 6, 11, 0},
+		{1, 1, 6, 11, 0},
 		{8, 8, 9, 7, 10}
 	};
-	board *proot, *pparent, *pworking, *pnew;
+	board *proot, *pparent, *pworking;
 	board *queue[QUEUE];
 	int head = 0;
 	int tail = 0;
@@ -44,7 +44,6 @@ int main(void){
 	proot = mymalloc(sizeof(board));
 	initializeBoard(proot, 0, InitialState, NULL, NULL, NULL);
 	pparent = proot;
-	queue[0] = proot;
 
 	while(1){
 		board *OldestOfThisGeneration = pparent;
@@ -58,25 +57,26 @@ int main(void){
 
 		/* ピース1から10を順に，動かすことができるかどうか確かめていく。 */
 		/* 動かせれば，動かして，新しい盤面を子とする */
-		for(piece = 1; piece <= 10; piece++){
+		for(piece = 1; piece <= 11; piece++){
 			for(direction = 1; direction <= 4; direction++){
 				pworking = pparent;
 				/* 上下左右，それぞれ1マス動かせるか。動かせれば動かす。 */
 				int check = checkEmpty(pparent->state, piece, direction, FALSE);
 				if(check == 1){
 					/* 新しい構造体を用意し，初期化。合わせて兄や親の属性を更新 */
-					pnew = mymalloc(sizeof(board));
-					initializeBoard(pnew, (pparent->NumOfMoves)+1, pparent->state, pparent, NULL, NULL);
+					board *tmp = pworking;
+					pworking = mymalloc(sizeof(board));
+					initializeBoard(pworking, (pparent->NumOfMoves)+1, pparent->state, pparent, NULL, NULL);
 					if(pparent->FirstChild == NULL){
-						pparent->FirstChild = pnew;
+						pparent->FirstChild = pworking;
 					} else {
-						pworking->NextBrother = pnew;
+						tmp->NextBrother = pworking;
 					}
-					pworking = pnew;
 					/* 新しく作った構造体において，ピースの移動を実行 */
 					checkEmpty(pworking->state, piece, direction, TRUE);
 					/* こいつがゴールであれば，計算打ち切っちゃってよい。 */
-					printf("%d\n", pworking->NumOfMoves); // debug
+					// printf("%d\n", pworking->NumOfMoves); // debug
+					// printBoard(pworking->state);
 					if(checkGoal(pworking) == 1){
 						printf("%d手で終了！\n", pworking->NumOfMoves);
 						exit(0);
@@ -94,7 +94,9 @@ int main(void){
 			pparent = OldestOfThisGeneration->FirstChild;
 		}
 	}
-
+	printBoard(InitialState);
+	printf("%d\n", checkEmpty(InitialState, 11, 2, 1));
+	printBoard(InitialState);
 	return 0;
 }
 
