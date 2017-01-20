@@ -14,6 +14,7 @@ typedef struct board{
 } board;
 
 void *mymalloc(int size);
+void printQueue(board **queue, int head, int tail);
 void printBoard(int pstate[][5]);
 void initializeBoard(
 	board *pb,
@@ -29,70 +30,70 @@ void appendIntoQueue(board *queue[], board *value, int *head, int *tail);
 board *pickFromQueue(board *queue[], int *head, int *tail);
 
 int main(void){
-	int piece, direction; /* ループカウンタ */
+	int ii, piece, direction; /* ループカウンタ */
 	int InitialState[4][5] = {
 		{5, 5, 2, 3, 4},
-		{1, 1, 6, 11, 0},
-		{1, 1, 6, 11, 0},
+		{1, 1, 6, 3, 0},
+		{1, 1, 6, 7, 0},
 		{8, 8, 9, 7, 10}
 	};
-	board *proot, *pparent, *pworking;
+	board *proot, *pworking;
 	board *queue[QUEUE];
 	int head = 0;
 	int tail = 0;
 
 	proot = mymalloc(sizeof(board));
 	initializeBoard(proot, 0, InitialState, NULL, NULL, NULL);
-	pparent = proot;
+	for(ii = 0; ii < QUEUE; ii++){
+		queue[ii] = NULL;
+	}
+	queue[0] = proot;
+	pworking = proot;
 
+	// 各世代ごとにループを回す
 	while(1){
-		board *OldestOfThisGeneration = pparent;
-		// いま考えている世代Fの全ての頂点をキューに追加
-		queue[0] = pparent;
-		while(queue[tail]->NextBrother != NULL){
-			appendIntoQueue(queue, queue[tail]->NextBrother, &head, &tail);
-		}
+		int generation = queue[head]->NumOfMoves;
+		printf("-----\nNEW GENERATION %d th\n", generation);
 
-		// pparent の子を列挙する
-
-		/* ピース1から10を順に，動かすことができるかどうか確かめていく。 */
-		/* 動かせれば，動かして，新しい盤面を子とする */
-		for(piece = 1; piece <= 11; piece++){
-			for(direction = 1; direction <= 4; direction++){
-				pworking = pparent;
-				/* 上下左右，それぞれ1マス動かせるか。動かせれば動かす。 */
-				int check = checkEmpty(pparent->state, piece, direction, FALSE);
-				if(check == 1){
-					/* 新しい構造体を用意し，初期化。合わせて兄や親の属性を更新 */
-					board *tmp = pworking;
-					pworking = mymalloc(sizeof(board));
-					initializeBoard(pworking, (pparent->NumOfMoves)+1, pparent->state, pparent, NULL, NULL);
-					if(pparent->FirstChild == NULL){
-						pparent->FirstChild = pworking;
-					} else {
-						tmp->NextBrother = pworking;
-					}
-					/* 新しく作った構造体において，ピースの移動を実行 */
-					checkEmpty(pworking->state, piece, direction, TRUE);
-					/* こいつがゴールであれば，計算打ち切っちゃってよい。 */
-					// printf("%d\n", pworking->NumOfMoves); // debug
-					// printBoard(pworking->state);
-					if(checkGoal(pworking) == 1){
-						printf("%d手で終了！\n", pworking->NumOfMoves);
-						exit(0);
+		// 子作り
+		do{
+			pworking = pickFromQueue(queue, &head, &tail);
+			printf("searching %p's child...\n", pworking);
+			/* pworkingの子を探していく */
+			board *pyoungest = NULL; /* pworkingのこの中で一番最近作られたもの */
+			/* ピース1から10を順に，動かすことができるかどうか確かめていく。 */
+			/* 動かせれば，動かして，新しい盤面を子とする */
+			for(piece = 1; piece <= 10; piece++){
+				for(direction = 1; direction <= 4; direction++){
+					/* 上下左右，それぞれ1マス動かせるか。動かせれば動かす。 */
+					int check = checkEmpty(pworking->state, piece, direction, FALSE);
+					if(check == 1){
+						/* 新しい構造体を用意し，初期化。 */
+						board *pnew = mymalloc(sizeof(board));
+						initializeBoard(pnew, (pworking->NumOfMoves)+1, pworking->state, pworking, NULL, NULL);
+						/* 兄や親のNextBroやFirstChldを更新 */
+						if(pworking->FirstChild == NULL){
+							pworking->FirstChild = pnew;
+						} else {
+							pyoungest->NextBrother = pnew;
+						}
+						/* 今作られた子がpworkingのこの中で一番若い */
+						pyoungest = pnew;
+						/* 新しく作った構造体において，ピースの移動を実行 */
+						checkEmpty(pnew->state, piece, direction, TRUE);
+						appendIntoQueue(queue, pnew, &head, &tail);
+						/* こいつがゴールであれば，計算打ち切っちゃってよい。 */
+						printf("Gen %d: new child @%p\n", pnew->NumOfMoves, pnew); // debug
+						// printBoard(pnew->state);
+						if(checkGoal(pnew) == 1){
+							printf("%d手で終了！\n", pnew->NumOfMoves);
+							exit(0);
+						}
 					}
 				}
 			}
-		}
-
+		} while(queue[head]->NumOfMoves == generation);
 		
-
-		// pparent を，キューに従って更新する
-		if(head != tail){
-			pparent = pickFromQueue(queue, &head, &tail);
-		} else{
-			pparent = OldestOfThisGeneration->FirstChild;
-		}
 	}
 	printBoard(InitialState);
 	printf("%d\n", checkEmpty(InitialState, 11, 2, 1));
@@ -107,6 +108,22 @@ void *mymalloc(int size){
 		exit(1);
 	}
 	return pointer;
+}
+
+// キューをプリントするための関数を作成
+void printQueue(board **queue, int head, int tail){
+	int ii;
+	for(ii = head; ii <= tail; ii++){
+		if(head > tail){
+			tail += QUEUE;
+		}
+		if(ii >= QUEUE){
+			printf("%p, ", queue[ii - QUEUE]);
+		} else {
+			printf("%p, ", queue[ii]);
+		}
+	}
+	printf("\n");
 }
 
 void printBoard(int pstate[][5]){
