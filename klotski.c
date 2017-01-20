@@ -234,6 +234,10 @@ int checkGoal(board *pb){
 }
 
 void appendIntoQueue(board *queue[], board *value, int *head, int *tail){
+	if((*head) == (*tail) + 1){
+		fprintf(stderr, "ERROR @%d: queue is too small (head: %d, tail: %d)\n", __LINE__, *head, *tail);
+		exit(1);
+	}
 	(*tail)++;
 	if((*tail) >= QUEUE){
 		(*tail) = (*tail) - QUEUE;
@@ -243,6 +247,10 @@ void appendIntoQueue(board *queue[], board *value, int *head, int *tail){
 }
 
 board *pickFromQueue(board *queue[], int *head, int *tail){
+	if((*head) == (*tail)){
+		fprintf(stderr, "ERROR @%d: invalid picking from queue.\n", __LINE__);
+		exit(1);
+	}
 	int tmp = *head;
 	(*head)++;
 	if((*head) >= QUEUE){
