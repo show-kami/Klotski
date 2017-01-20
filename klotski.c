@@ -39,6 +39,7 @@ int main(void){
 	};
 	board *proot, *pworking;
 	board *queue[QUEUE];
+	board *pnew = NULL;
 	int head = 0;
 	int tail = 0;
 
@@ -68,7 +69,7 @@ int main(void){
 					int check = checkEmpty(pworking->state, piece, direction, FALSE);
 					if(check == 1){
 						/* 新しい構造体を用意し，初期化。 */
-						board *pnew = mymalloc(sizeof(board));
+						pnew = mymalloc(sizeof(board));
 						initializeBoard(pnew, (pworking->NumOfMoves)+1, pworking->state, pworking, NULL, NULL);
 						/* 兄や親のNextBroやFirstChldを更新 */
 						if(pworking->FirstChild == NULL){
