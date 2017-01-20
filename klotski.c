@@ -93,9 +93,7 @@ int main(void){
 		} while(queue[head]->NumOfMoves == generation);
 		
 	}
-	printBoard(InitialState);
-	printf("%d\n", checkEmpty(InitialState, 11, 2, 1));
-	printBoard(InitialState);
+	printBoard(pnew->state);
 	return 0;
 }
 
