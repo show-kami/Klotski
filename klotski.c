@@ -58,7 +58,6 @@ int main(void){
 		// 子作り
 		do{
 			pworking = pickFromQueue(queue, &head, &tail);
-			printf("searching %p's child...\n", pworking);
 			/* pworkingの子を探していく */
 			board *pyoungest = NULL; /* pworkingのこの中で一番最近作られたもの */
 			/* ピース1から10を順に，動かすことができるかどうか確かめていく。 */
@@ -83,8 +82,6 @@ int main(void){
 						checkEmpty(pnew->state, piece, direction, TRUE);
 						appendIntoQueue(queue, pnew, &head, &tail);
 						/* こいつがゴールであれば，計算打ち切っちゃってよい。 */
-						printf("Gen %d: new child @%p\n", pnew->NumOfMoves, pnew); // debug
-						// printBoard(pnew->state);
 						if(checkGoal(pnew) == 1){
 							printf("%d手で終了！\n", pnew->NumOfMoves);
 							exit(0);
