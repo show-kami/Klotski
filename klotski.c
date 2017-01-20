@@ -48,17 +48,24 @@ int main(void){
 	for(ii = 0; ii < QUEUE; ii++){
 		queue[ii] = NULL;
 	}
-	queue[0] = proot;
 	pworking = proot;
 
 	// 各世代ごとにループを回す
 	while(1){
-		int generation = queue[head]->NumOfMoves;
+		int generation;
+		if(queue[head] == NULL){
+			generation = 0;
+		} else {
+			generation = queue[head]->NumOfMoves;
+		} 
 		printf("-----\nNEW GENERATION %d th\n", generation);
+		printf("queue: %d ~ %d\n", head, tail);
 
-		// 子作り
+		// 子作り。第F世代の次世代を全て探す
 		do{
-			pworking = pickFromQueue(queue, &head, &tail);
+			if(head != tail){
+				pworking = pickFromQueue(queue, &head, &tail);
+			}
 			/* pworkingの子を探していく */
 			board *pyoungest = NULL; /* pworkingのこの中で一番最近作られたもの */
 			/* ピース1から10を順に，動かすことができるかどうか確かめていく。 */
@@ -91,7 +98,6 @@ int main(void){
 				}
 			}
 		} while(queue[head]->NumOfMoves == generation);
-		
 	}
 	printBoard(pnew->state);
 	return 0;
@@ -238,7 +244,9 @@ void appendIntoQueue(board *queue[], board *value, int *head, int *tail){
 		fprintf(stderr, "ERROR @%d: queue is too small (head: %d, tail: %d)\n", __LINE__, *head, *tail);
 		exit(1);
 	}
-	(*tail)++;
+	if(queue[*tail] != NULL){
+		(*tail)++;
+	}
 	if((*tail) >= QUEUE){
 		(*tail) = (*tail) - QUEUE;
 	}
