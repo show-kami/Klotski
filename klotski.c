@@ -34,6 +34,7 @@ int checkEmpty(int state[][5], int piece, int direction, int MoveOrNot);
 int checkGoal(board *pb);
 void appendIntoQueue(board *queue[], board *value, int *head, int *tail);
 board *pickFromQueue(board *queue[], int *head, int *tail);
+void checkHashTable(hash **HashTable, board *IsThisNew)
 
 int main(void){
 	int ii, piece, direction; /* ループカウンタ */
@@ -87,6 +88,11 @@ int main(void){
 						initializeBoard(pnew, (pworking->NumOfMoves)+1, pworking->state, pworking, NULL, NULL);
 						/* 新しく作った構造体において，ピースの移動を実行 */
 						checkEmpty(pnew->state, piece, direction, TRUE);
+						/* 移動したあとが今まで見たことない盤面であるかどうかチェック */
+						if(checkHashTable(HashTable, pnew) != 0){
+							free(pnew);
+							continue;
+						}
 						appendIntoQueue(queue, pnew, &head, &tail);
 						/* 兄や親のNextBroやFirstChldを更新 */
 						if(pworking->FirstChild == NULL){
@@ -272,4 +278,15 @@ board *pickFromQueue(board *queue[], int *head, int *tail){
 		(*head) = (*head) - QUEUE;
 	}
 	return queue[tmp];
+}
+
+//--------------------------------------------------------------------------
+// 関数名	:checkHashTable
+// 概要		:新しく生成した盤面IsThisNewが，今までに出てきたことがないかどうかを確認する。
+// 戻り値	:int (0: 新しい。 1: 前にも見たことがある)
+// 引数		:hash **HashTable (ハッシュテーブルである配列)
+// 引数		:board *IsThisNew (判定をしたい盤面)
+//--------------------------------------------------------------------------
+int checkHashTable(hash **HashTable, board *IsThisNew){
+	
 }
