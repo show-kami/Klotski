@@ -78,6 +78,9 @@ int main(void){
 						/* 新しい構造体を用意し，初期化。 */
 						pnew = mymalloc(sizeof(board));
 						initializeBoard(pnew, (pworking->NumOfMoves)+1, pworking->state, pworking, NULL, NULL);
+						/* 新しく作った構造体において，ピースの移動を実行 */
+						checkEmpty(pnew->state, piece, direction, TRUE);
+						appendIntoQueue(queue, pnew, &head, &tail);
 						/* 兄や親のNextBroやFirstChldを更新 */
 						if(pworking->FirstChild == NULL){
 							pworking->FirstChild = pnew;
@@ -86,9 +89,6 @@ int main(void){
 						}
 						/* 今作られた子がpworkingのこの中で一番若い */
 						pyoungest = pnew;
-						/* 新しく作った構造体において，ピースの移動を実行 */
-						checkEmpty(pnew->state, piece, direction, TRUE);
-						appendIntoQueue(queue, pnew, &head, &tail);
 						/* こいつがゴールであれば，計算打ち切っちゃってよい。 */
 						if(checkGoal(pnew) == 1){
 							printf("%d手で終了！\n", pnew->NumOfMoves);
