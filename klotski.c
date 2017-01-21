@@ -4,6 +4,7 @@
 #define TRUE 1
 #define FALSE 0
 #define QUEUE 100000
+#define HASH 100000
 
 typedef struct board{
 	int NumOfMoves;
@@ -12,6 +13,11 @@ typedef struct board{
 	struct board *FirstChild;
 	struct board *NextBrother;
 } board;
+
+typedef struct hash{
+	struct hash *next;
+	board *pboard;
+} hash;
 
 void *mymalloc(int size);
 void printQueue(board **queue, int head, int tail);
@@ -39,6 +45,7 @@ int main(void){
 	};
 	board *proot, *pworking;
 	board *queue[QUEUE];
+	hash *HashTable[HASH];
 	board *pnew = NULL;
 	int head = 0;
 	int tail = 0;
