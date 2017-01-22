@@ -351,11 +351,33 @@ unsigned int calculateHashKey(int pstate[][5]){
 //--------------------------------------------------------------------------
 // 関数名	:checkHashTable
 // 概要		:新しく生成した盤面IsThisNewが，今までに出てきたことがないかどうかを確認する。
-// 戻り値	:int (0: 新しい。 1: 前にも見たことがある)
+// 戻り値	:int (0: 新しい。 0以外: 前にも見たことがある)
 // 引数		:hash **HashTable (ハッシュテーブルである配列)
 // 引数		:board *IsThisNew (判定をしたい盤面)
 //--------------------------------------------------------------------------
 int checkHashTable(board *IsThisNew){
+	int CounterOfSameState = 0;
 	unsigned int key = calculateHashKey(IsThisNew->state);
-	return 0;
+	hash *new;
+	// ハッシュテーブルに格納するためのハッシュ構造体を新しく作成する
+	new = mymalloc(sizeof(hash));
+	new->next = NULL;
+	new->pboard = IsThisNew;
+
+	// 盤面が新しいかどうか判定＆ハッシュテーブルに新しい構造体を格納
+	if(HashTable[key] == NULL){
+		HashTable[key] = new;
+		CounterOfSameState = 0;
+	} else {
+		hash *searching = HashTable[key];
+		hash *LastSearched = NULL;
+		do{
+			CounterOfSameState += compareStateWithAnother(IsThisNew->state, (searching->pboard)->state);
+			LastSearched = searching;
+			searching = searching->next;
+		} while (searching != NULL);
+		LastSearched->next = new;
+	}
+	// 戻る
+	return CounterOfSameState;
 }
