@@ -35,6 +35,7 @@ int checkEmpty(int state[][5], int piece, int direction, int MoveOrNot);
 int checkGoal(board *pb);
 void appendIntoQueue(board *queue[], board *value, int *head, int *tail);
 board *pickFromQueue(board *queue[], int *head, int *tail);
+int compareStateWithAnother(int pstate1[][5],int pstate2[][5]);
 unsigned int calculateHashKey(int pstate[][5]);
 int checkHashTable(board *IsThisNew);
 
@@ -285,6 +286,24 @@ board *pickFromQueue(board *queue[], int *head, int *tail){
 }
 
 //--------------------------------------------------------------------------
+// 関数名	:compareStateWithAnother
+// 概要		:盤面の状態1と状態2とが同じであるか，同じでないかを判定する
+// 戻り値	:0: 同じ。1: 違う。
+// 引数		:状態1および状態2
+//--------------------------------------------------------------------------
+int compareStateWithAnother(int pstate1[][5],int pstate2[][5]){
+	int xi, yi;
+	for(yi = 0; yi < 5; yi++){
+		for(xi = 0; xi < 4; xi++){
+			if(pstate1[xi][yi] != pstate2[xi][yi]){
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+//--------------------------------------------------------------------------
 // 関数名	:calculateHashKey
 // 概要		:ハッシュキーを計算する
 // 戻り値	:ハッシュキー
@@ -332,6 +351,6 @@ unsigned int calculateHashKey(int pstate[][5]){
 // 引数		:board *IsThisNew (判定をしたい盤面)
 //--------------------------------------------------------------------------
 int checkHashTable(board *IsThisNew){
-	
+	unsigned int key = calculateHashKey(IsThisNew->state);
 	return 0;
 }
