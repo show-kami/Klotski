@@ -293,7 +293,7 @@ board *pickFromQueue(board *queue[], int *head, int *tail){
 //--------------------------------------------------------------------------
 // 関数名	:compareStateWithAnother
 // 概要		:盤面の状態1と状態2とが同じであるか，同じでないかを判定する
-// 戻り値	:0: 同じ。1: 違う。
+// 戻り値	:1: 同じ。0: 違う。
 // 引数		:状態1および状態2
 //--------------------------------------------------------------------------
 int compareStateWithAnother(int pstate1[][5],int pstate2[][5]){
@@ -301,11 +301,11 @@ int compareStateWithAnother(int pstate1[][5],int pstate2[][5]){
 	for(yi = 0; yi < 5; yi++){
 		for(xi = 0; xi < 4; xi++){
 			if(pstate1[xi][yi] != pstate2[xi][yi]){
-				return 1;
+				return 0;
 			}
 		}
 	}
-	return 0;
+	return 1;
 }
 
 //--------------------------------------------------------------------------
@@ -330,18 +330,17 @@ unsigned int calculateHashKey(int pstate[][5]){
 					break;
 				case 4:
 					pos4  = xi + 4 * yi;
+					break;
 				case 9:
 					pos9 = xi + 4 * yi;
+					break;
 				case 10:
 					pos10 = xi + 4 * yi;
+					break;
 				default:
 					break;
 			}
 		}
-	}
-	if(pos2 == -1 || pos4 == -1 || pos9 == -1 || pos10 == -1){
-		fprintf(stderr, "ERROR @%d: could not get valid hash key.\n", __LINE__);
-		exit(1);
 	}
 	key = pos2 * 4*4*4 + pos4 * 4*4 + pos9 * 4 + pos10;
 	key = key % HASH;
@@ -351,12 +350,12 @@ unsigned int calculateHashKey(int pstate[][5]){
 //--------------------------------------------------------------------------
 // 関数名	:checkHashTable
 // 概要		:新しく生成した盤面IsThisNewが，今までに出てきたことがないかどうかを確認する。
-// 戻り値	:int (0: 新しい。 0以外: 前にも見たことがある)
+// 戻り値	:int (0: 出てきたことはない。 0以外: 出てきたことがある)
 // 引数		:hash **HashTable (ハッシュテーブルである配列)
 // 引数		:board *IsThisNew (判定をしたい盤面)
 //--------------------------------------------------------------------------
 int checkHashTable(board *IsThisNew){
-	int CounterOfSameState = 0;
+	int identifier = 0;
 	unsigned int key = calculateHashKey(IsThisNew->state);
 	hash *new;
 	// ハッシュテーブルに格納するためのハッシュ構造体を新しく作成する
@@ -367,17 +366,17 @@ int checkHashTable(board *IsThisNew){
 	// 盤面が新しいかどうか判定＆ハッシュテーブルに新しい構造体を格納
 	if(HashTable[key] == NULL){
 		HashTable[key] = new;
-		CounterOfSameState = 0;
+		identifier = 0;
 	} else {
 		hash *searching = HashTable[key];
 		hash *LastSearched = NULL;
 		do{
-			CounterOfSameState += compareStateWithAnother(IsThisNew->state, (searching->pboard)->state);
+			identifier += compareStateWithAnother(IsThisNew->state, (searching->pboard)->state);
 			LastSearched = searching;
 			searching = searching->next;
 		} while (searching != NULL);
 		LastSearched->next = new;
 	}
 	// 戻る
-	return CounterOfSameState;
+	return identifier;
 }
