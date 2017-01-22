@@ -56,6 +56,11 @@ int main(void){
 	int head = 0;
 	int tail = 0;
 
+	// グローバル変数の初期化
+	for(ii = 0; ii < HASH; ii++){
+		HashTable[ii] = NULL;
+	}
+
 	proot = mymalloc(sizeof(board));
 	initializeBoard(proot, 0, InitialState, NULL, NULL, NULL);
 	for(ii = 0; ii < QUEUE; ii++){
