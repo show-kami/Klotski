@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #define TRUE 1
 #define FALSE 0
@@ -316,33 +317,19 @@ int compareStateWithAnother(int pstate1[][5],int pstate2[][5]){
 //--------------------------------------------------------------------------
 unsigned int calculateHashKey(int pstate[][5]){
 	// ハッシュは，ピース番号2, 4, 9, 10の位置によって決めることにする
-	unsigned int key;
-	int pos2 = -1;
-	int pos4 = -1;
-	int pos9 = -1;
-	int pos10 = -1;
-	int xi,yi;
+	unsigned int key = 0;
+	int pos[10] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
+	int xi,yi,pi;
 	for(yi = 0; yi < 5; yi++){
 		for(xi = 0; xi < 4; xi++){
-			switch(pstate[xi][yi]){
-				case 2:
-					pos2 = xi + 4 * yi;
-					break;
-				case 4:
-					pos4  = xi + 4 * yi;
-					break;
-				case 9:
-					pos9 = xi + 4 * yi;
-					break;
-				case 10:
-					pos10 = xi + 4 * yi;
-					break;
-				default:
-					break;
+			if(pstate[xi][yi] != 0){
+				pos[pstate[xi][yi] - 1] = xi + 4 * yi;
 			}
 		}
 	}
-	key = pos2 * 4*4*4 + pos4 * 4*4 + pos9 * 4 + pos10;
+	for(pi = 1; pi <= 10; pi++){
+		key += pos[pi-1] * pow(4, pi);
+	}
 	key = key % HASH;
 	return key;
 }
