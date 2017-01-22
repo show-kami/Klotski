@@ -4,8 +4,10 @@
 
 #define TRUE 1
 #define FALSE 0
-#define QUEUE 100000
+#define QUEUE 1000000
 #define HASH 99999
+
+// #define DEBUG
 
 // define structs
 typedef struct board{
