@@ -34,7 +34,7 @@ int checkEmpty(int state[][5], int piece, int direction, int MoveOrNot);
 int checkGoal(board *pb);
 void appendIntoQueue(board *queue[], board *value, int *head, int *tail);
 board *pickFromQueue(board *queue[], int *head, int *tail);
-void checkHashTable(hash **HashTable, board *IsThisNew)
+int checkHashTable(hash **HashTable, board *IsThisNew);
 
 int main(void){
 	int ii, piece, direction; /* ループカウンタ */
@@ -288,5 +288,5 @@ board *pickFromQueue(board *queue[], int *head, int *tail){
 // 引数		:board *IsThisNew (判定をしたい盤面)
 //--------------------------------------------------------------------------
 int checkHashTable(hash **HashTable, board *IsThisNew){
-	
+	return 0;
 }
