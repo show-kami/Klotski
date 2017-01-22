@@ -4,7 +4,7 @@
 #define TRUE 1
 #define FALSE 0
 #define QUEUE 100000
-#define HASH 100000
+#define HASH 99999
 
 typedef struct board{
 	int NumOfMoves;
@@ -34,6 +34,7 @@ int checkEmpty(int state[][5], int piece, int direction, int MoveOrNot);
 int checkGoal(board *pb);
 void appendIntoQueue(board *queue[], board *value, int *head, int *tail);
 board *pickFromQueue(board *queue[], int *head, int *tail);
+unsigned int calculateHashKey(int pstate[][5]);
 int checkHashTable(hash **HashTable, board *IsThisNew);
 
 int main(void){
@@ -278,6 +279,46 @@ board *pickFromQueue(board *queue[], int *head, int *tail){
 		(*head) = (*head) - QUEUE;
 	}
 	return queue[tmp];
+}
+
+//--------------------------------------------------------------------------
+// 関数名	:calculateHashKey
+// 概要		:ハッシュキーを計算する
+// 戻り値	:ハッシュキー
+// 引数		:盤面の状態
+//--------------------------------------------------------------------------
+unsigned int calculateHashKey(int pstate[][5]){
+	// ハッシュは，ピース番号2, 4, 9, 10の位置によって決めることにする
+	unsigned int key;
+	int pos2 = -1;
+	int pos4 = -1;
+	int pos9 = -1;
+	int pos10 = -1;
+	int xi,yi;
+	for(yi = 0; yi < 5; yi++){
+		for(xi = 0; xi < 4; xi++){
+			switch(pstate[xi][yi]){
+				case 2:
+					pos2 = xi + 4 * yi;
+					break;
+				case 4:
+					pos4  = xi + 4 * yi;
+				case 9:
+					pos9 = xi + 4 * yi;
+				case 10:
+					pos10 = xi + 4 * yi;
+				default:
+					break;
+			}
+		}
+	}
+	if(pos2 == -1 || pos4 == -1 || pos9 == -1 || pos10 == -1){
+		fprintf(stderr, "ERROR @%d: could not get valid hash key.\n", __LINE__);
+		exit(1);
+	}
+	key = pos2 * 4*4*4 + pos4 * 4*4 + pos9 * 4 + pos10;
+	key = key % HASH;
+	return key;
 }
 
 //--------------------------------------------------------------------------
