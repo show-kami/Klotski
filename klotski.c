@@ -133,9 +133,9 @@ void printQueue(board **queue, int head, int tail){
 			tail += QUEUE;
 		}
 		if(ii >= QUEUE){
-			printf("%p, ", queue[ii - QUEUE]);
+			printf("%p, ", (void *)queue[ii - QUEUE]);
 		} else {
-			printf("%p, ", queue[ii]);
+			printf("%p, ", (void *)queue[ii]);
 		}
 	}
 	printf("\n");
