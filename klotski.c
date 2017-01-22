@@ -36,7 +36,10 @@ int checkGoal(board *pb);
 void appendIntoQueue(board *queue[], board *value, int *head, int *tail);
 board *pickFromQueue(board *queue[], int *head, int *tail);
 unsigned int calculateHashKey(int pstate[][5]);
-int checkHashTable(hash **HashTable, board *IsThisNew);
+int checkHashTable(board *IsThisNew);
+
+// declaration of global variables
+hash *HashTable[HASH];
 
 int main(void){
 	int ii, piece, direction; /* ループカウンタ */
@@ -48,7 +51,6 @@ int main(void){
 	};
 	board *proot, *pworking;
 	board *queue[QUEUE];
-	hash *HashTable[HASH];
 	board *pnew = NULL;
 	int head = 0;
 	int tail = 0;
@@ -91,7 +93,7 @@ int main(void){
 						/* 新しく作った構造体において，ピースの移動を実行 */
 						checkEmpty(pnew->state, piece, direction, TRUE);
 						/* 移動したあとが今まで見たことない盤面であるかどうかチェック */
-						if(checkHashTable(HashTable, pnew) != 0){
+						if(checkHashTable(pnew) != 0){
 							free(pnew);
 							continue;
 						}
@@ -329,6 +331,7 @@ unsigned int calculateHashKey(int pstate[][5]){
 // 引数		:hash **HashTable (ハッシュテーブルである配列)
 // 引数		:board *IsThisNew (判定をしたい盤面)
 //--------------------------------------------------------------------------
-int checkHashTable(hash **HashTable, board *IsThisNew){
+int checkHashTable(board *IsThisNew){
+	
 	return 0;
 }
