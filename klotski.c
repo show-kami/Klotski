@@ -118,16 +118,22 @@ int main(void){
 						pyoungest = pnew;
 						/* こいつがゴールであれば，計算打ち切っちゃってよい。 */
 						if(checkGoal(pnew) == 1){
-							printf("%d手で終了！\n", pnew->NumOfMoves);
-							exit(0);
+							goto OUT;
 						}
 					}
 				}
 			}
 		} while(queue[head]->NumOfMoves == generation);
 	}
-	printBoard(pnew->state);
-	printHashTable();
+	OUT:
+	pworking = pnew;
+	printf("%d手で終了！\n", pworking->NumOfMoves);
+	do{
+		printf("%d th move:\n", pworking->NumOfMoves);
+		printBoard(pworking->state);
+		pworking = pworking->Parent;
+	} while (pworking != NULL);
+	
 	return 0;
 }
 
