@@ -39,6 +39,7 @@ board *pickFromQueue(board *queue[], int *head, int *tail);
 int compareStateWithAnother(int pstate1[][5],int pstate2[][5]);
 unsigned int calculateHashKey(int pstate[][5]);
 int checkHashTable(board *IsThisNew);
+void printHashTable(void);
 
 // declaration of global variables
 hash *HashTable[HASH];
@@ -124,6 +125,7 @@ int main(void){
 		} while(queue[head]->NumOfMoves == generation);
 	}
 	printBoard(pnew->state);
+	printHashTable();
 	return 0;
 }
 
@@ -366,4 +368,25 @@ int checkHashTable(board *IsThisNew){
 	}
 	// 戻る
 	return identifier;
+}
+
+void printHashTable(void){
+	unsigned int ki;
+	hash *printed;
+
+	for(ki = 0; ki < HASH; ki++){
+		printf("key %u: ", ki);
+		if(HashTable[ki] == NULL){
+			printf("NULL. \n\n");
+			continue;
+		}
+		printed = HashTable[ki];
+		do{
+			printf("%p -> ", (void *)printed);
+			printed = printed->next;
+		} while (printed != NULL);
+		printf("key %u end. \n\n", ki);
+	}
+	printf("End of printing hash. \n");
+	return;
 }
