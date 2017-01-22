@@ -1,10 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #define TRUE 1
 #define FALSE 0
-#define QUEUE 100000
+#define QUEUE 1000000
+#define HASH 99999
 
+// #define DEBUG
+
+// define structs
 typedef struct board{
 	int NumOfMoves;
 	int state[4][5];
@@ -12,8 +17,14 @@ typedef struct board{
 	struct board *FirstChild;
 	struct board *NextBrother;
 } board;
+typedef struct hash{
+	struct hash *next;
+	board *pboard;
+} hash;
 
+// prototype declaration of functions
 void *mymalloc(int size);
+void printQueue(board **queue, int head, int tail);
 void printBoard(int pstate[][5]);
 void initializeBoard(
 	board *pb,
@@ -27,74 +38,102 @@ int checkEmpty(int state[][5], int piece, int direction, int MoveOrNot);
 int checkGoal(board *pb);
 void appendIntoQueue(board *queue[], board *value, int *head, int *tail);
 board *pickFromQueue(board *queue[], int *head, int *tail);
+int compareStateWithAnother(int pstate1[][5],int pstate2[][5]);
+unsigned int calculateHashKey(int pstate[][5]);
+int checkHashTable(board *IsThisNew);
+void printHashTable(void);
+
+// declaration of global variables
+hash *HashTable[HASH];
 
 int main(void){
-	int piece, direction; /* ループカウンタ */
+	int ii, piece, direction; /* ループカウンタ */
 	int InitialState[4][5] = {
 		{5, 5, 2, 3, 4},
 		{1, 1, 6, 3, 0},
 		{1, 1, 6, 7, 0},
 		{8, 8, 9, 7, 10}
 	};
-	board *proot, *pparent, *pworking, *pnew;
+	board *proot, *pworking;
 	board *queue[QUEUE];
+	board *pnew = NULL;
 	int head = 0;
 	int tail = 0;
 
+	// グローバル変数の初期化
+	for(ii = 0; ii < HASH; ii++){
+		HashTable[ii] = NULL;
+	}
+
 	proot = mymalloc(sizeof(board));
 	initializeBoard(proot, 0, InitialState, NULL, NULL, NULL);
-	pparent = proot;
-	queue[0] = proot;
+	for(ii = 0; ii < QUEUE; ii++){
+		queue[ii] = NULL;
+	}
+	pworking = proot;
 
+	// 各世代ごとにループを回す
 	while(1){
-		board *OldestOfThisGeneration = pparent;
-		// いま考えている世代Fの全ての頂点をキューに追加
-		queue[0] = pparent;
-		while(queue[tail]->NextBrother != NULL){
-			appendIntoQueue(queue, queue[tail]->NextBrother, &head, &tail);
-		}
+		int generation;
+		if(queue[head] == NULL){
+			generation = 0;
+		} else {
+			generation = queue[head]->NumOfMoves;
+		} 
+		printf("-----\nNEW GENERATION %d th\n", generation);
+		printf("queue: %d ~ %d\n", head, tail);
 
-		// pparent の子を列挙する
-
-		/* ピース1から10を順に，動かすことができるかどうか確かめていく。 */
-		/* 動かせれば，動かして，新しい盤面を子とする */
-		for(piece = 1; piece <= 10; piece++){
-			for(direction = 1; direction <= 4; direction++){
-				pworking = pparent;
-				/* 上下左右，それぞれ1マス動かせるか。動かせれば動かす。 */
-				int check = checkEmpty(pparent->state, piece, direction, FALSE);
-				if(check == 1){
-					/* 新しい構造体を用意し，初期化。合わせて兄や親の属性を更新 */
-					pnew = mymalloc(sizeof(board));
-					initializeBoard(pnew, (pparent->NumOfMoves)+1, pparent->state, pparent, NULL, NULL);
-					if(pparent->FirstChild == NULL){
-						pparent->FirstChild = pnew;
-					} else {
-						pworking->NextBrother = pnew;
-					}
-					pworking = pnew;
-					/* 新しく作った構造体において，ピースの移動を実行 */
-					checkEmpty(pworking->state, piece, direction, TRUE);
-					/* こいつがゴールであれば，計算打ち切っちゃってよい。 */
-					printf("%d\n", pworking->NumOfMoves); // debug
-					if(checkGoal(pworking) == 1){
-						printf("%d手で終了！\n", pworking->NumOfMoves);
-						exit(0);
+		// 子作り。第F世代の次世代を全て探す
+		do{
+			if(head != tail){
+				pworking = pickFromQueue(queue, &head, &tail);
+			}
+			/* pworkingの子を探していく */
+			board *pyoungest = NULL; /* pworkingのこの中で一番最近作られたもの */
+			/* ピース1から10を順に，動かすことができるかどうか確かめていく。 */
+			/* 動かせれば，動かして，新しい盤面を子とする */
+			for(piece = 1; piece <= 10; piece++){
+				for(direction = 1; direction <= 4; direction++){
+					/* 上下左右，それぞれ1マス動かせるか。動かせれば動かす。 */
+					int check = checkEmpty(pworking->state, piece, direction, FALSE);
+					if(check == 1){
+						/* 新しい構造体を用意し，初期化。 */
+						pnew = mymalloc(sizeof(board));
+						initializeBoard(pnew, (pworking->NumOfMoves)+1, pworking->state, pworking, NULL, NULL);
+						/* 新しく作った構造体において，ピースの移動を実行 */
+						checkEmpty(pnew->state, piece, direction, TRUE);
+						/* 移動したあとが今まで見たことない盤面であるかどうかチェック */
+						if(checkHashTable(pnew) != 0){
+							free(pnew);
+							continue;
+						}
+						appendIntoQueue(queue, pnew, &head, &tail);
+						/* 兄や親のNextBroやFirstChldを更新 */
+						if(pworking->FirstChild == NULL){
+							pworking->FirstChild = pnew;
+						} else {
+							pyoungest->NextBrother = pnew;
+						}
+						/* 今作られた子がpworkingのこの中で一番若い */
+						pyoungest = pnew;
+						/* こいつがゴールであれば，計算打ち切っちゃってよい。 */
+						if(checkGoal(pnew) == 1){
+							goto OUT;
+						}
 					}
 				}
 			}
-		}
-
-		
-
-		// pparent を，キューに従って更新する
-		if(head != tail){
-			pparent = pickFromQueue(queue, &head, &tail);
-		} else{
-			pparent = OldestOfThisGeneration->FirstChild;
-		}
+		} while(queue[head]->NumOfMoves == generation);
 	}
-
+	OUT:
+	pworking = pnew;
+	printf("%d手で終了！\n", pworking->NumOfMoves);
+	do{
+		printf("%d th move:\n", pworking->NumOfMoves);
+		printBoard(pworking->state);
+		pworking = pworking->Parent;
+	} while (pworking != NULL);
+	
 	return 0;
 }
 
@@ -105,6 +144,22 @@ void *mymalloc(int size){
 		exit(1);
 	}
 	return pointer;
+}
+
+// キューをプリントするための関数を作成
+void printQueue(board **queue, int head, int tail){
+	int ii;
+	for(ii = head; ii <= tail; ii++){
+		if(head > tail){
+			tail += QUEUE;
+		}
+		if(ii >= QUEUE){
+			printf("%p, ", (void *)queue[ii - QUEUE]);
+		} else {
+			printf("%p, ", (void *)queue[ii]);
+		}
+	}
+	printf("\n");
 }
 
 void printBoard(int pstate[][5]){
@@ -219,7 +274,13 @@ int checkGoal(board *pb){
 }
 
 void appendIntoQueue(board *queue[], board *value, int *head, int *tail){
-	(*tail)++;
+	if((*head) == (*tail) + 1){
+		fprintf(stderr, "ERROR @%d: queue is too small (head: %d, tail: %d)\n", __LINE__, *head, *tail);
+		exit(1);
+	}
+	if(queue[*tail] != NULL){
+		(*tail)++;
+	}
 	if((*tail) >= QUEUE){
 		(*tail) = (*tail) - QUEUE;
 	}
@@ -228,10 +289,120 @@ void appendIntoQueue(board *queue[], board *value, int *head, int *tail){
 }
 
 board *pickFromQueue(board *queue[], int *head, int *tail){
+	if((*head) == (*tail)){
+		fprintf(stderr, "ERROR @%d: invalid picking from queue.\n", __LINE__);
+		exit(1);
+	}
 	int tmp = *head;
 	(*head)++;
 	if((*head) >= QUEUE){
 		(*head) = (*head) - QUEUE;
 	}
 	return queue[tmp];
+}
+
+//--------------------------------------------------------------------------
+// 関数名	:compareStateWithAnother
+// 概要		:盤面の状態1と状態2とが同じであるか，同じでないかを判定する
+// 戻り値	:1: 同じ。0: 違う。
+// 引数		:状態1および状態2
+//--------------------------------------------------------------------------
+int compareStateWithAnother(int pstate1[][5],int pstate2[][5]){
+	int xi, yi;
+	for(yi = 0; yi < 5; yi++){
+		for(xi = 0; xi < 4; xi++){
+			if(pstate1[xi][yi] != pstate2[xi][yi]){
+				return 0;
+			}
+		}
+	}
+	return 1;
+}
+
+//--------------------------------------------------------------------------
+// 関数名	:calculateHashKey
+// 概要		:ハッシュキーを計算する
+// 戻り値	:ハッシュキー
+// 引数		:盤面の状態
+//--------------------------------------------------------------------------
+unsigned int calculateHashKey(int pstate[][5]){
+	// ハッシュは，ピース番号2, 4, 9, 10の位置によって決めることにする
+	unsigned int key = 0;
+	int pos[10] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
+	int xi,yi,pi;
+	for(yi = 0; yi < 5; yi++){
+		for(xi = 0; xi < 4; xi++){
+			if(pstate[xi][yi] != 0){
+				pos[pstate[xi][yi] - 1] = xi + 4 * yi;
+			}
+		}
+	}
+	for(pi = 1; pi <= 10; pi++){
+		key += pos[pi-1] * pow(4, pi);
+	}
+	key = key % HASH;
+	return key;
+}
+
+//--------------------------------------------------------------------------
+// 関数名	:checkHashTable
+// 概要		:新しく生成した盤面IsThisNewが，今までに出てきたことがないかどうかを確認する。
+// 戻り値	:int (0: 出てきたことはない。 0以外: 出てきたことがある)
+// 引数		:hash **HashTable (ハッシュテーブルである配列)
+// 引数		:board *IsThisNew (判定をしたい盤面)
+//--------------------------------------------------------------------------
+int checkHashTable(board *IsThisNew){
+	int identifier = 0;
+	unsigned int key = calculateHashKey(IsThisNew->state);
+	hash *new;
+
+	// ハッシュテーブルに格納するためのハッシュ構造体を新しく作成する
+	new = mymalloc(sizeof(hash));
+	new->next = NULL;
+	new->pboard = IsThisNew;
+
+	// 盤面が新しいかどうか判定＆ハッシュテーブルに新しい構造体を格納
+	if(HashTable[key] == NULL){
+		HashTable[key] = new;
+	} else {
+		hash *searching = HashTable[key];
+		hash *LastSearched = NULL;
+		do{
+			identifier = compareStateWithAnother(IsThisNew->state, (searching->pboard)->state);
+			if(identifier == 1){
+				break;
+			}
+			LastSearched = searching;
+			searching = searching->next;
+		} while (searching != NULL);
+		if(identifier == 0){
+			LastSearched->next = new;
+		} else {
+			free(new);
+		}
+	}
+	
+	// 戻る
+	return identifier;
+}
+
+void printHashTable(void){
+	unsigned int ki;
+	hash *printed;
+
+	for(ki = 0; ki < HASH; ki++){
+		printf("key %u: ", ki);
+		if(HashTable[ki] == NULL){
+			printf("NULL. \n\n");
+			continue;
+		}
+		printed = HashTable[ki];
+		do{
+			printf("%p -> ", (void *)printed);
+			printed = printed->next;
+		} while (printed != NULL);
+		printf("key %u end. \n\n", ki);
+	}
+	printf("End of printing hash. \n");
+	return;
 }
