@@ -347,6 +347,7 @@ int checkHashTable(board *IsThisNew){
 	int identifier = 0;
 	unsigned int key = calculateHashKey(IsThisNew->state);
 	hash *new;
+
 	// ハッシュテーブルに格納するためのハッシュ構造体を新しく作成する
 	new = mymalloc(sizeof(hash));
 	new->next = NULL;
@@ -355,17 +356,24 @@ int checkHashTable(board *IsThisNew){
 	// 盤面が新しいかどうか判定＆ハッシュテーブルに新しい構造体を格納
 	if(HashTable[key] == NULL){
 		HashTable[key] = new;
-		identifier = 0;
 	} else {
 		hash *searching = HashTable[key];
 		hash *LastSearched = NULL;
 		do{
-			identifier += compareStateWithAnother(IsThisNew->state, (searching->pboard)->state);
+			identifier = compareStateWithAnother(IsThisNew->state, (searching->pboard)->state);
+			if(identifier == 1){
+				break;
+			}
 			LastSearched = searching;
 			searching = searching->next;
 		} while (searching != NULL);
-		LastSearched->next = new;
+		if(identifier == 0){
+			LastSearched->next = new;
+		} else {
+			free(new);
+		}
 	}
+	
 	// 戻る
 	return identifier;
 }
