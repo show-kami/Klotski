@@ -6,6 +6,7 @@
 #define QUEUE 100000
 #define HASH 99999
 
+// define structs
 typedef struct board{
 	int NumOfMoves;
 	int state[4][5];
@@ -13,12 +14,12 @@ typedef struct board{
 	struct board *FirstChild;
 	struct board *NextBrother;
 } board;
-
 typedef struct hash{
 	struct hash *next;
 	board *pboard;
 } hash;
 
+// prototype declaration of functions
 void *mymalloc(int size);
 void printQueue(board **queue, int head, int tail);
 void printBoard(int pstate[][5]);
