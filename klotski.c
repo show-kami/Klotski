@@ -24,6 +24,7 @@ typedef struct hash{
 
 // prototype declaration of functions
 void *mymalloc(int size);
+void executeKlotskiGame(int InitialState[][5]);
 void printQueue(board **queue, int head, int tail);
 void printBoard(int pstate[][5]);
 void initializeBoard(
@@ -47,23 +48,44 @@ void printHashTable(void);
 hash *HashTable[HASH];
 
 int main(void){
-	int ii, piece, direction; /* ループカウンタ */
+	int ii;
 	int InitialState[4][5] = {
 		{5, 5, 2, 3, 4},
 		{1, 1, 6, 3, 0},
 		{1, 1, 6, 7, 0},
 		{8, 8, 9, 7, 10}
 	};
-	board *proot, *pworking;
-	board *queue[QUEUE];
-	board *pnew = NULL;
-	int head = 0;
-	int tail = 0;
+	
+	// board *result[0];
 
 	// グローバル変数の初期化
 	for(ii = 0; ii < HASH; ii++){
 		HashTable[ii] = NULL;
 	}
+
+	executeKlotskiGame(InitialState);
+	
+	return 0;
+}
+
+void *mymalloc(int size){
+	void *pointer = malloc(size);
+	if(pointer == NULL){
+		fprintf(stderr, "ERROR: allocation failed.\n");
+		exit(1);
+	}
+	return pointer;
+}
+
+// 実行部分
+void executeKlotskiGame(int InitialState[][5]){
+	// 必要な変数の宣言
+	int ii, piece, direction; /* ループカウンタ */
+	board *proot, *pworking;
+	board *queue[QUEUE];
+	board *pnew = NULL;
+	int head = 0;
+	int tail = 0;
 
 	proot = mymalloc(sizeof(board));
 	initializeBoard(proot, 0, InitialState, NULL, NULL, NULL);
@@ -133,17 +155,7 @@ int main(void){
 		printBoard(pworking->state);
 		pworking = pworking->Parent;
 	} while (pworking != NULL);
-	
-	return 0;
-}
-
-void *mymalloc(int size){
-	void *pointer = malloc(size);
-	if(pointer == NULL){
-		fprintf(stderr, "ERROR: allocation failed.\n");
-		exit(1);
-	}
-	return pointer;
+	return;
 }
 
 // キューをプリントするための関数を作成
