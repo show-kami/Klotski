@@ -170,7 +170,8 @@ board **executeKlotskiGame(int InitialState[][5], board **result){
 
 // 結果を別ファイルに出力するようにする
 void outputResult(board **result){
-	int position, xi, yi;
+	int position, xi, yi, ti;
+	int ResultNumOfMoves = result[0]->NumOfMoves;
 	FILE *fp = fopen("result.csv", "w");
 	// ヘッダ行の書き込み
 	fprintf(fp, "trial");
@@ -181,6 +182,20 @@ void outputResult(board **result){
 		}
 	}
 	fprintf(fp, "\n");
+
+	// 結果の書き込み
+	for(ti = ResultNumOfMoves; ti >= 0; ti++){
+		fprintf(fp, "%d", ti - ResultNumOfMoves);
+		for(yi = 0; yi < 5; yi++){
+			for(xi = 0; xi < 4; xi++){
+				position = xi + 4 * yi;
+				fprintf(fp, ", %d", (result[ti]->state)[xi][yi]);
+			}
+		}
+		fprintf(fp, "\n");
+	}
+
+	// 終了処理
 	fclose(fp);
 	return;
 }
