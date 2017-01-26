@@ -108,8 +108,6 @@ board **executeKlotskiGame(int InitialState[][5], board **result){
 		} else {
 			generation = queue[head]->NumOfMoves;
 		} 
-		printf("-----\nNEW GENERATION %d th\n", generation);
-		printf("queue: %d ~ %d\n", head, tail);
 
 		// 子作り。第F世代の次世代を全て探す
 		do{
