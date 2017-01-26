@@ -101,6 +101,7 @@ board **executeKlotskiGame(int InitialState[][5], board **result){
 	pworking = proot;
 
 	// 各世代ごとにループを回す
+	printf("calculating...\n");
 	while(1){
 		int generation;
 		if(queue[head] == NULL){
@@ -152,6 +153,7 @@ board **executeKlotskiGame(int InitialState[][5], board **result){
 		} while(queue[head]->NumOfMoves == generation);
 	}
 	OUT:
+	printf("\nend calculating!\n");
 	pworking = pnew;
 	ResultNumOfMoves = pworking->NumOfMoves;
 	result = mymalloc(ResultNumOfMoves * sizeof(board *));
