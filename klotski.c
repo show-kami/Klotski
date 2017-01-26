@@ -25,6 +25,7 @@ typedef struct hash{
 // prototype declaration of functions
 void *mymalloc(int size);
 board **executeKlotskiGame(int InitialState[][5], board **result);
+void outputResultIntoJSON(board **result);
 void printQueue(board **queue, int head, int tail);
 void printBoard(int pstate[][5]);
 void initializeBoard(
@@ -66,6 +67,8 @@ int main(void){
 
 	result = executeKlotskiGame(InitialState, result);
 	ResultNumOfMoves = result[0]->NumOfMoves;
+
+	outputResultIntoJSON(result);
 	
 	return 0;
 }
@@ -163,6 +166,23 @@ board **executeKlotskiGame(int InitialState[][5], board **result){
 		pworking = pworking->Parent;
 	}
 	return result;
+}
+
+// 結果を別ファイルに出力するようにする
+void outputResultIntoJSON(board **result){
+	int position, xi, yi;
+	FILE *fp = fopen("result.csv", "w");
+	// ヘッダ行の書き込み
+	fprintf(fp, "trial");
+	for(yi = 0; yi < 5; yi++){
+		for(xi = 0; xi < 4; xi++){
+			position = xi + 4 * yi;
+			fprintf(fp, ", (%d,%d)", xi, yi);
+		}
+	}
+	fprintf(fp, "\n");
+	fclose(fp);
+	return;
 }
 
 // キューをプリントするための関数を作成
