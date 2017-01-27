@@ -184,11 +184,10 @@ void outputResult(board **result){
 	fprintf(fp, "\n");
 
 	// 結果の書き込み
-	for(ti = ResultNumOfMoves; ti >= 0; ti++){
-		fprintf(fp, "%d", ti - ResultNumOfMoves);
+	for(ti = ResultNumOfMoves - 1; ti >= 0; ti--){
+		fprintf(fp, "%d", ResultNumOfMoves - ti);
 		for(yi = 0; yi < 5; yi++){
 			for(xi = 0; xi < 4; xi++){
-				position = xi + 4 * yi;
 				fprintf(fp, ", %d", (result[ti]->state)[xi][yi]);
 			}
 		}
