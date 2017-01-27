@@ -25,6 +25,7 @@ typedef struct hash{
 // prototype declaration of functions
 void *mymalloc(int size);
 board **executeKlotskiGame(int InitialState[][5], board **result);
+void outputResult(int InitialState[][5], board **result);
 void printQueue(board **queue, int head, int tail);
 void printBoard(int pstate[][5]);
 void initializeBoard(
@@ -66,6 +67,8 @@ int main(void){
 
 	result = executeKlotskiGame(InitialState, result);
 	ResultNumOfMoves = result[0]->NumOfMoves;
+
+	outputResult(InitialState, result);
 	
 	return 0;
 }
@@ -98,6 +101,7 @@ board **executeKlotskiGame(int InitialState[][5], board **result){
 	pworking = proot;
 
 	// 各世代ごとにループを回す
+	printf("calculating...\n");
 	while(1){
 		int generation;
 		if(queue[head] == NULL){
@@ -105,8 +109,6 @@ board **executeKlotskiGame(int InitialState[][5], board **result){
 		} else {
 			generation = queue[head]->NumOfMoves;
 		} 
-		printf("-----\nNEW GENERATION %d th\n", generation);
-		printf("queue: %d ~ %d\n", head, tail);
 
 		// 子作り。第F世代の次世代を全て探す
 		do{
@@ -151,6 +153,7 @@ board **executeKlotskiGame(int InitialState[][5], board **result){
 		} while(queue[head]->NumOfMoves == generation);
 	}
 	OUT:
+	printf("\nend calculating!\n");
 	pworking = pnew;
 	ResultNumOfMoves = pworking->NumOfMoves;
 	result = mymalloc(ResultNumOfMoves * sizeof(board *));
@@ -163,6 +166,46 @@ board **executeKlotskiGame(int InitialState[][5], board **result){
 		pworking = pworking->Parent;
 	}
 	return result;
+}
+
+// 結果を別ファイルに出力するようにする
+void outputResult(int InitialState[][5], board **result){
+	int position, xi, yi, ti;
+	int ResultNumOfMoves = result[0]->NumOfMoves;
+	FILE *fp = fopen("result.csv", "w");
+	// ヘッダ行の書き込み
+	fprintf(fp, "trial");
+	for(yi = 0; yi < 5; yi++){
+		for(xi = 0; xi < 4; xi++){
+			position = xi + 4 * yi;
+			fprintf(fp, ", (%d:%d)", xi, yi);
+		}
+	}
+	fprintf(fp, "\n");
+
+	// 初期状態の書き込み
+	fprintf(fp, "0");
+	for(yi = 0; yi < 5; yi++){
+		for(xi = 0; xi < 4; xi++){
+			fprintf(fp, ", %d", InitialState[xi][yi]);
+		}
+	}
+	fprintf(fp, "\n");
+
+	// 結果の書き込み
+	for(ti = ResultNumOfMoves - 1; ti >= 0; ti--){
+		fprintf(fp, "%d", ResultNumOfMoves - ti);
+		for(yi = 0; yi < 5; yi++){
+			for(xi = 0; xi < 4; xi++){
+				fprintf(fp, ", %d", (result[ti]->state)[xi][yi]);
+			}
+		}
+		fprintf(fp, "\n");
+	}
+
+	// 終了処理
+	fclose(fp);
+	return;
 }
 
 // キューをプリントするための関数を作成
