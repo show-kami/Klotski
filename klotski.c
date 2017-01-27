@@ -178,7 +178,7 @@ void outputResult(board **result){
 	for(yi = 0; yi < 5; yi++){
 		for(xi = 0; xi < 4; xi++){
 			position = xi + 4 * yi;
-			fprintf(fp, ", (%d,%d)", xi, yi);
+			fprintf(fp, ", (%d:%d)", xi, yi);
 		}
 	}
 	fprintf(fp, "\n");
